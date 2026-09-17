@@ -15,12 +15,11 @@ public class VentanaPrincipal extends JFrame {
 
     private final LibroDAO libroDAO = new LibroDAO();
 
-    // Variable para rastrear el libro seleccionado (NUEVO)
     private Integer idLibroSeleccionado = null;
 
     // Componentes del Formulario
     private JTextField txtTitulo, txtAutor, txtCategoria, txtPrecio, txtStock, txtAnio;
-    private JButton btnGuardar, btnActualizar, btnLimpiar; // Se suma btnActualizar (NUEVO)
+    private JButton btnGuardar, btnActualizar, btnLimpiar, btnEliminar;
 
     // Componentes de la Tabla
     private JTable tablaLibros;
@@ -70,7 +69,6 @@ public class VentanaPrincipal extends JFrame {
         tablaLibros = new JTable(modeloTabla);
         add(new JScrollPane(tablaLibros), BorderLayout.CENTER);
 
-        // Listener para detectar clics en filas de la tabla (NUEVO)
         tablaLibros.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -81,18 +79,21 @@ public class VentanaPrincipal extends JFrame {
         // 3. PANEL INFERIOR: Botones de Acción
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnGuardar = new JButton("Guardar Nuevo");
-        btnActualizar = new JButton("Actualizar"); // NUEVO
+        btnActualizar = new JButton("Actualizar");
         btnLimpiar = new JButton("Limpiar Campos");
+        btnEliminar = new JButton("Eliminar Seleccionado");
 
         panelBotones.add(btnGuardar);
-        panelBotones.add(btnActualizar); // NUEVO
+        panelBotones.add(btnActualizar);
         panelBotones.add(btnLimpiar);
+        panelBotones.add(btnEliminar); 
         add(panelBotones, BorderLayout.SOUTH);
 
         // Eventos
         btnGuardar.addActionListener(e -> guardarLibro());
-        btnActualizar.addActionListener(e -> actualizarLibro()); // NUEVO
+        btnActualizar.addActionListener(e -> actualizarLibro());
         btnLimpiar.addActionListener(e -> limpiarFormulario());
+        btnEliminar.addActionListener(e -> eliminarLibro()); 
 
         // Cargar datos
         cargarDatosTabla();
@@ -115,7 +116,6 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // Método Seleccionar Fila (NUEVO)
     private void seleccionarFila() {
         int fila = tablaLibros.getSelectedRow();
         if (fila != -1) {
@@ -183,7 +183,6 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // Método Actualizar (NUEVO)
     private void actualizarLibro() {
         if (idLibroSeleccionado == null) {
             JOptionPane.showMessageDialog(this, "Por favor, selecciona un libro de la tabla para actualizar.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -235,8 +234,31 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
+    // Método Eliminar (NUEVO)
+    private void eliminarLibro() {
+        int filaSeleccionada = tablaLibros.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un libro de la tabla para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int id = (int) modeloTabla.getValueAt(filaSeleccionada, 0);
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas eliminar el libro con ID " + id + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                libroDAO.eliminar(id);
+                JOptionPane.showMessageDialog(this, "Libro eliminado correctamente.");
+                limpiarFormulario();
+                cargarDatosTabla();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
     private void limpiarFormulario() {
-        idLibroSeleccionado = null; // Reiniciar selección (NUEVO)
+        idLibroSeleccionado = null;
         txtTitulo.setText("");
         txtAutor.setText("");
         txtCategoria.setText("");
