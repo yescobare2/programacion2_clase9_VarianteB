@@ -65,5 +65,23 @@ public class LibroDAO {
 		}
 		return libros;
 	}
+
+//3. Actualizar datos de libros
+public boolean actualizar(Libro libro) throws SQLException{
+	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?. existencias = ?, anio_publicacion = ? WHERE id = ?";
+	
+	try (Connection conn = ConexionDB.getConnection();
+		 PreparedStatement stmt = conn.prepareStatement(sql)){
+	
+		stmt.setString(1, libro.getTitulo());
+		stmt.setString(2, libro.getAutor());
+		stmt.setString(3, libro.getCategoria());
+		stmt.setDouble(5, libro.getPrecio());
+		stmt.setInt(5, libro.getExistencias());
+		stmt.setInt(6, libro.getAnioPublicacion());
+		
+		return stmt.executeUpdate() > 0;
+	  }
+	}
 }
 
