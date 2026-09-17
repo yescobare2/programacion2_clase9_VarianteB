@@ -6,6 +6,8 @@ import edu.umg.programacion2.proyecto.modelo.Libro;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.Year;
 import java.util.List;
 
@@ -13,9 +15,14 @@ public class VentanaPrincipal extends JFrame {
 
     private final LibroDAO libroDAO = new LibroDAO();
 
-    private JTextField txtTitulo, txtAutor, txtCategoria, txtPrecio, txtStock, txtAnio;
-    private JButton btnGuardar, btnLimpiar;
+    // Variable para rastrear el libro seleccionado (NUEVO)
+    private Integer idLibroSeleccionado = null;
 
+    // Componentes del Formulario
+    private JTextField txtTitulo, txtAutor, txtCategoria, txtPrecio, txtStock, txtAnio;
+    private JButton btnGuardar, btnActualizar, btnLimpiar; // Se suma btnActualizar (NUEVO)
+
+    // Componentes de la Tabla
     private JTable tablaLibros;
     private DefaultTableModel modeloTabla;
 
@@ -26,7 +33,7 @@ public class VentanaPrincipal extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
-        // Formulario
+        // 1. PANEL SUPERIOR: Formulario de Registro
         JPanel panelFormulario = new JPanel(new GridLayout(3, 4, 10, 10));
         panelFormulario.setBorder(BorderFactory.createTitledBorder("Datos del Libro"));
 
@@ -52,7 +59,7 @@ public class VentanaPrincipal extends JFrame {
 
         add(panelFormulario, BorderLayout.NORTH);
 
-        // Tabla
+        // 2. PANEL CENTRAL: Configuración de la Tabla
         String[] columnas = {"ID", "Título", "Autor", "Categoría", "Precio", "Stock", "Año"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
@@ -63,18 +70,31 @@ public class VentanaPrincipal extends JFrame {
         tablaLibros = new JTable(modeloTabla);
         add(new JScrollPane(tablaLibros), BorderLayout.CENTER);
 
-        // Botones
+        // Listener para detectar clics en filas de la tabla (NUEVO)
+        tablaLibros.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                seleccionarFila();
+            }
+        });
+
+        // 3. PANEL INFERIOR: Botones de Acción
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnGuardar = new JButton("Guardar Nuevo");
+        btnActualizar = new JButton("Actualizar"); // NUEVO
         btnLimpiar = new JButton("Limpiar Campos");
 
         panelBotones.add(btnGuardar);
+        panelBotones.add(btnActualizar); // NUEVO
         panelBotones.add(btnLimpiar);
         add(panelBotones, BorderLayout.SOUTH);
 
+        // Eventos
         btnGuardar.addActionListener(e -> guardarLibro());
+        btnActualizar.addActionListener(e -> actualizarLibro()); // NUEVO
         btnLimpiar.addActionListener(e -> limpiarFormulario());
 
+        // Cargar datos
         cargarDatosTabla();
     }
 
@@ -92,6 +112,20 @@ public class VentanaPrincipal extends JFrame {
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al cargar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Método Seleccionar Fila (NUEVO)
+    private void seleccionarFila() {
+        int fila = tablaLibros.getSelectedRow();
+        if (fila != -1) {
+            idLibroSeleccionado = (int) modeloTabla.getValueAt(fila, 0);
+            txtTitulo.setText(modeloTabla.getValueAt(fila, 1).toString());
+            txtAutor.setText(modeloTabla.getValueAt(fila, 2).toString());
+            txtCategoria.setText(modeloTabla.getValueAt(fila, 3).toString());
+            txtPrecio.setText(modeloTabla.getValueAt(fila, 4).toString());
+            txtStock.setText(modeloTabla.getValueAt(fila, 5).toString());
+            txtAnio.setText(modeloTabla.getValueAt(fila, 6).toString());
         }
     }
 
@@ -149,7 +183,60 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
+    // Método Actualizar (NUEVO)
+    private void actualizarLibro() {
+        if (idLibroSeleccionado == null) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un libro de la tabla para actualizar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            String titulo = txtTitulo.getText().trim();
+            String autor = txtAutor.getText().trim();
+            String categoria = txtCategoria.getText().trim();
+
+            if (titulo.isEmpty() || autor.isEmpty() || categoria.isEmpty() || 
+                txtPrecio.getText().trim().isEmpty() || txtStock.getText().trim().isEmpty() || txtAnio.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            double precio = Double.parseDouble(txtPrecio.getText().trim());
+            int stock = Integer.parseInt(txtStock.getText().trim());
+            int anio = Integer.parseInt(txtAnio.getText().trim());
+
+            if (precio <= 0) {
+                JOptionPane.showMessageDialog(this, "El precio debe ser mayor a 0.", "Validación de Precio", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (stock < 0) {
+                JOptionPane.showMessageDialog(this, "El stock no puede ser un número negativo.", "Validación de Stock", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int anioActual = Year.now().getValue();
+            if (anio < 1000 || anio > anioActual) {
+                JOptionPane.showMessageDialog(this, "El año de publicación debe estar entre 1000 y " + anioActual + ".", "Validación de Año", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Libro libro = new Libro(idLibroSeleccionado, titulo, autor, categoria, precio, stock, anio);
+            libroDAO.actualizar(libro);
+
+            JOptionPane.showMessageDialog(this, "¡Libro actualizado correctamente!");
+            limpiarFormulario();
+            cargarDatosTabla();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Precio, Stock y Año deben ser valores numéricos válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al actualizar el libro: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void limpiarFormulario() {
+        idLibroSeleccionado = null; // Reiniciar selección (NUEVO)
         txtTitulo.setText("");
         txtAutor.setText("");
         txtCategoria.setText("");
