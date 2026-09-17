@@ -83,5 +83,20 @@ public boolean actualizar(Libro libro) throws SQLException{
 		return stmt.executeUpdate() > 0;
 	  }
 	}
+
+//4. Eliminar liro
+public boolean eliminar(int id) throws SQLException {
+	String sql = "DELETE FROM libros WHERE id = ?";
+	
+	try (Connection conn = ConexionDB.getConnection();
+		PreparedStatement stmt = conn.prepareStatement(sql)){
+		
+		stmt.setInt(1, id);
+		return stmt.executeUpdate() > 0;
+	}
 }
+}
+
+
+
 
