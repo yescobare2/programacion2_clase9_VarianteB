@@ -16,7 +16,7 @@ public class LibroDAO {
 
 	//1. Crear un nuevo libro en la DB
 	public Libro crear (Libro libro) throws SQLException{
-		String sql = "INSERT INTO libros (titulo, autor, categoria, precio, existencia, anio_publicacion) VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO libros (titulo, autor, categoria, precio, existencias, anio_publicacion) VALUES (?, ?, ?, ?, ?, ?)";
 	
 		try (Connection conn = ConexionDB.getConnection();
 			 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
@@ -24,7 +24,7 @@ public class LibroDAO {
 			stmt.setString(1, libro.getTitulo());
 			stmt.setString(2, libro.getAutor());
 			stmt.setString(3, libro.getCategoria());
-			stmt.setDouble(5, libro.getPrecio());
+			stmt.setDouble(4, libro.getPrecio());
 			stmt.setInt(5, libro.getExistencias());
 			stmt.setInt(6, libro.getAnioPublicacion());
 			
@@ -68,7 +68,7 @@ public class LibroDAO {
 
 //3. Actualizar datos de libros
 public boolean actualizar(Libro libro) throws SQLException{
-	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?. existencias = ?, anio_publicacion = ? WHERE id = ?";
+	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?, existencias = ?, anio_publicacion = ? WHERE id = ?";
 	
 	try (Connection conn = ConexionDB.getConnection();
 		 PreparedStatement stmt = conn.prepareStatement(sql)){
@@ -76,10 +76,10 @@ public boolean actualizar(Libro libro) throws SQLException{
 		stmt.setString(1, libro.getTitulo());
 		stmt.setString(2, libro.getAutor());
 		stmt.setString(3, libro.getCategoria());
-		stmt.setDouble(5, libro.getPrecio());
+		stmt.setDouble(4, libro.getPrecio());
 		stmt.setInt(5, libro.getExistencias());
 		stmt.setInt(6, libro.getAnioPublicacion());
-		
+		stmt.setInt(7, libro.getId());
 		return stmt.executeUpdate() > 0;
 	  }
 	}
