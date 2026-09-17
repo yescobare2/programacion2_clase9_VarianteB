@@ -41,5 +41,29 @@ public class LibroDAO {
 			
 		}
 	}
+	
+	//2. Leer libros
+	public List<Libro> listarTodos() throws SQLException{
+		String sql = "SELECT id, titulo, autor, categoria, precio, existencias, anio_publicacion FROM libros ORDER BY id";
+		List<Libro> libros = new ArrayList<>();
+		
+		try (Connection conn = ConexionDB.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				ResultSet rs= stmt.executeQuery()){
+			
+			while (rs.next()) {
+				libros.add(new Libro(
+				  rs.getInt("id"),
+				  rs.getString("titulo"),
+				  rs.getString("autor"),
+				  rs.getString("categoria"),
+				  rs.getDouble("precio"),
+				  rs.getInt("existencias"),
+				  rs.getInt("anio_publicacion")	
+			 ));
+			}
+		}
+		return libros;
+	}
 }
 
