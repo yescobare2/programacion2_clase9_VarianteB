@@ -1,4 +1,4 @@
-### 2. `README.md` del Módulo Core
+`README.md` del Módulo Core
 
 **Ubicación:** `/libreria-core/READMEcore.md`
 
