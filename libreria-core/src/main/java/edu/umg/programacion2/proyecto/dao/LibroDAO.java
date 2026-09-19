@@ -27,6 +27,8 @@ public class LibroDAO {
 			stmt.setDouble(4, libro.getPrecio());
 			stmt.setInt(5, libro.getExistencias());
 			stmt.setInt(6, libro.getAnioPublicacion());
+			stmt.setDate(7, new java.sql.Date(System.currentTimeMillis()));
+		        stmt.executeUpdate();
 			
 			stmt.executeUpdate();
 			
@@ -59,7 +61,8 @@ public class LibroDAO {
 				  rs.getString("categoria"),
 				  rs.getDouble("precio"),
 				  rs.getInt("existencias"),
-				  rs.getInt("anio_publicacion")	
+				  rs.getInt("anio_publicacion"),	
+				  rs.getDate("fechaIngreso")
 			 ));
 			}
 		}
@@ -79,12 +82,13 @@ public boolean actualizar(Libro libro) throws SQLException{
 		stmt.setDouble(4, libro.getPrecio());
 		stmt.setInt(5, libro.getExistencias());
 		stmt.setInt(6, libro.getAnioPublicacion());
-		stmt.setInt(7, libro.getId());
+		stmt.setDate(7, libro.getFechaIngreso());
+		stmt.setInt(8, libro.getId());
 		return stmt.executeUpdate() > 0;
 	  }
 	}
 
-//4. Eliminar liro
+//4. Eliminar libro
 public boolean eliminar(int id) throws SQLException {
 	String sql = "DELETE FROM libros WHERE id = ?";
 	
