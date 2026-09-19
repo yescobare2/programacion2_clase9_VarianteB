@@ -46,7 +46,7 @@ public class LibroDAO {
 	
 	//2. Leer libros
 	public List<Libro> listarTodos() throws SQLException{
-		String sql = "SELECT id, titulo, autor, categoria, precio, existencias, anio_publicacion FROM libros ORDER BY id";
+		String sql = "SELECT id, titulo, autor, categoria, precio, existencias, anio_publicacion, fechaIngreso FROM libros ORDER BY id";
 		List<Libro> libros = new ArrayList<>();
 		
 		try (Connection conn = ConexionDB.getConnection();
@@ -71,7 +71,7 @@ public class LibroDAO {
 
 //3. Actualizar datos de libros
 public boolean actualizar(Libro libro) throws SQLException{
-	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?, existencias = ?, anio_publicacion = ? WHERE id = ?";
+	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?, existencias = ?, anio_publicacion = ? fechaIngreso = ?WHERE id = ?";
 	
 	try (Connection conn = ConexionDB.getConnection();
 		 PreparedStatement stmt = conn.prepareStatement(sql)){

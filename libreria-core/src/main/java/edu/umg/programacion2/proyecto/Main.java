@@ -5,6 +5,7 @@ import edu.umg.programacion2.proyecto.modelo.Libro;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.sql.Date;
 
 public class Main {
 
@@ -16,7 +17,7 @@ public class Main {
 		
 		//1. Create: crar un libro de prueba
 		System.out.println("1. Creando libro de prueba");		
-        Libro libroNuevo = new Libro ("Libro de prueba", "Sin autor", "Ninguno", 145.00, 7, 2000);
+        Libro libroNuevo = new Libro ("Libro de prueba", "Sin autor", "Ninguno", 145.00, 7, 2000, Date.valueOf("2015-07-12") );
         Libro libroCreado = dao.crear(libroNuevo);
         int idGenerado = libroCreado.getId();
         System.out.println("Libro creado exitosamente con ID: " + idGenerado + "\n");

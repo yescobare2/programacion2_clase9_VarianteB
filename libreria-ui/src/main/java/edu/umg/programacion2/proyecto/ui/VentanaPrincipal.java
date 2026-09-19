@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.Year;
 import java.util.List;
+import java.sql.Date;
 
 public class VentanaPrincipal extends JFrame {
 
@@ -18,12 +19,13 @@ public class VentanaPrincipal extends JFrame {
     private Integer idLibroSeleccionado = null;
 
     // Componentes del Formulario
-    private JTextField txtTitulo, txtAutor, txtCategoria, txtPrecio, txtStock, txtAnio;
+    private JTextField txtTitulo, txtAutor, txtCategoria, txtPrecio, txtStock, txtAnio, txtfechaIngreso;
     private JButton btnGuardar, btnActualizar, btnLimpiar, btnEliminar;
 
     // Componentes de la Tabla
     private JTable tablaLibros;
     private DefaultTableModel modeloTabla;
+    
 
     public VentanaPrincipal() {
         setTitle("Gestión de Librería - Panel Principal");
@@ -42,6 +44,7 @@ public class VentanaPrincipal extends JFrame {
         txtPrecio = new JTextField();
         txtStock = new JTextField();
         txtAnio = new JTextField();
+        txtfechaIngreso = new JTextField();
 
         panelFormulario.add(new JLabel("Título:"));
         panelFormulario.add(txtTitulo);
@@ -55,11 +58,13 @@ public class VentanaPrincipal extends JFrame {
         panelFormulario.add(txtStock);
         panelFormulario.add(new JLabel("Año Publicación:"));
         panelFormulario.add(txtAnio);
+        panelFormulario.add(new JLabel("Fecha de ingreso al catalogo:"));
+        panelFormulario.add(txtfechaIngreso);
 
         add(panelFormulario, BorderLayout.NORTH);
 
         // 2. PANEL CENTRAL: Configuración de la Tabla
-        String[] columnas = {"ID", "Título", "Autor", "Categoría", "Precio", "Stock", "Año"};
+        String[] columnas = {"ID", "Título", "Autor", "Categoría", "Precio", "Stock", "Año", "Fecha de ingreso"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -107,7 +112,8 @@ public class VentanaPrincipal extends JFrame {
                 Object[] fila = {
                     l.getId(), l.getTitulo(), l.getAutor(),
                     l.getCategoria(), l.getPrecio(),
-                    l.getExistencias(), l.getAnioPublicacion()
+                    l.getExistencias(), l.getAnioPublicacion(),
+                    l.getFechaIngreso()
                 };
                 modeloTabla.addRow(fila);
             }
@@ -126,6 +132,7 @@ public class VentanaPrincipal extends JFrame {
             txtPrecio.setText(modeloTabla.getValueAt(fila, 4).toString());
             txtStock.setText(modeloTabla.getValueAt(fila, 5).toString());
             txtAnio.setText(modeloTabla.getValueAt(fila, 6).toString());
+            txtfechaIngreso.setText(modeloTabla.getValueAt(fila, 7).toString());
         }
     }
 
@@ -134,6 +141,7 @@ public class VentanaPrincipal extends JFrame {
             String titulo = txtTitulo.getText().trim();
             String autor = txtAutor.getText().trim();
             String categoria = txtCategoria.getText().trim();
+            java.sql.Date fechaActual = new java.sql.Date(System.currentTimeMillis());
 
             if (titulo.isEmpty() || autor.isEmpty() || categoria.isEmpty() || 
                 txtPrecio.getText().trim().isEmpty() || txtStock.getText().trim().isEmpty() || txtAnio.getText().trim().isEmpty()) {
@@ -160,6 +168,13 @@ public class VentanaPrincipal extends JFrame {
                 JOptionPane.showMessageDialog(this, "El año de publicación debe estar entre 1000 y " + anioActual + ".", "Validación de Año", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            
+            int fecha = Year.now().getValue();
+            if (anio < 1000 || anio > anioActual) {
+                JOptionPane.showMessageDialog(this, "El año de publicación debe estar entre 1000 y " + fecha + ".", "Validación de Año", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
 
             List<Libro> librosExistentes = libroDAO.listarTodos();
             for (Libro l : librosExistentes) {
@@ -168,8 +183,9 @@ public class VentanaPrincipal extends JFrame {
                     return;
                 }
             }
-
-            Libro libro = new Libro(titulo, autor, categoria, precio, stock, anio);
+            
+            java.sql.Date fechaIngreso = new java.sql.Date(System.currentTimeMillis());
+            Libro libro = new Libro(titulo, autor, categoria, precio, stock, anio, fechaIngreso);
             libroDAO.crear(libro);
 
             JOptionPane.showMessageDialog(this, "¡Libro guardado exitosamente!");
@@ -220,9 +236,10 @@ public class VentanaPrincipal extends JFrame {
                 return;
             }
 
-            Libro libro = new Libro(idLibroSeleccionado, titulo, autor, categoria, precio, stock, anio);
+            java.sql.Date fechaActual = new java.sql.Date(System.currentTimeMillis());
+            Libro libro = new Libro(idLibroSeleccionado, titulo, autor, categoria, precio, stock, anio, fechaActual);
             libroDAO.actualizar(libro);
-
+            
             JOptionPane.showMessageDialog(this, "¡Libro actualizado correctamente!");
             limpiarFormulario();
             cargarDatosTabla();
