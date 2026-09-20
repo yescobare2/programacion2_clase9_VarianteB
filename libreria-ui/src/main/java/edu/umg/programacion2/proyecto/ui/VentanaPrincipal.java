@@ -35,7 +35,7 @@ public class VentanaPrincipal extends JFrame {
         setLayout(new BorderLayout(10, 10));
 
         // 1. PANEL SUPERIOR: Formulario de Registro
-        JPanel panelFormulario = new JPanel(new GridLayout(3, 4, 10, 10));
+        JPanel panelFormulario = new JPanel(new GridLayout(4, 4, 10, 10));
         panelFormulario.setBorder(BorderFactory.createTitledBorder("Datos del Libro"));
 
         txtTitulo = new JTextField();
@@ -45,7 +45,8 @@ public class VentanaPrincipal extends JFrame {
         txtStock = new JTextField();
         txtAnio = new JTextField();
         txtfechaIngreso = new JTextField();
-
+        txtfechaIngreso = new JTextField();
+        
         panelFormulario.add(new JLabel("Título:"));
         panelFormulario.add(txtTitulo);
         panelFormulario.add(new JLabel("Autor:"));
@@ -60,7 +61,12 @@ public class VentanaPrincipal extends JFrame {
         panelFormulario.add(txtAnio);
         panelFormulario.add(new JLabel("Fecha de ingreso al catalogo:"));
         panelFormulario.add(txtfechaIngreso);
-
+        panelFormulario.add(new JLabel(""));
+        panelFormulario.add(new JLabel(""));
+        
+        JPanel panelNorte = new JPanel(new BorderLayout());
+        panelNorte.add(panelFormulario, BorderLayout.CENTER);
+        
         add(panelFormulario, BorderLayout.NORTH);
 
         // 2. PANEL CENTRAL: Configuración de la Tabla
@@ -88,9 +94,9 @@ public class VentanaPrincipal extends JFrame {
         btnLimpiar = new JButton("Limpiar Campos");
         btnEliminar = new JButton("Eliminar Seleccionado");
         JButton btnResumen = new JButton("Ver Resumen");
+        
+        
         panelBotones.add(btnResumen);
-
-
         panelBotones.add(btnGuardar);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnLimpiar);
@@ -103,13 +109,43 @@ public class VentanaPrincipal extends JFrame {
         btnActualizar.addActionListener(e -> actualizarLibro());
         btnLimpiar.addActionListener(e -> limpiarFormulario());
         btnEliminar.addActionListener(e -> eliminarLibro()); 
-
+        btnResumen.addActionListener(e -> mostrarResumenLibros());
         
                 
         // Cargar datos
         cargarDatosTabla();
     }
 
+    private void mostrarResumenLibros() {
+        try {
+            // 1. Obtiene la lista completa de libros desde el DAO
+            List<Libro> listaLibros = libroDAO.listarTodos();
+
+            int totalLibros = 0;
+            int librosConStock = 0;
+
+            // 2. Recorremos la lista en Java con un foreach y un contador
+            for (Libro libro : listaLibros) {
+                totalLibros++; // Cuenta el total
+                
+                // Condición (ejemplo: libros que tienen stock disponible > 0)
+                if (libro.getExistencias() > 0) { 
+                    librosConStock++; // Cuenta los que cumplen la condición
+                }
+            }
+
+            // 3. Muestra el resumen en un mensaje emergente
+            String mensaje = "=== RESUMEN GENERAL ===\n" +
+                             "Total de libros registrados: " + totalLibros + "\n" +
+                             "Libros con stock disponible: " + librosConStock;
+
+            JOptionPane.showMessageDialog(this, mensaje, "Resumen de Libros", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al obtener el resumen: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     private void cargarDatosTabla() {
         modeloTabla.setRowCount(0);
         try {
@@ -175,11 +211,21 @@ public class VentanaPrincipal extends JFrame {
                 return;
             }
             
-            int fecha = Year.now().getValue();
-            if (anio < 1000 || anio > anioActual) {
-                JOptionPane.showMessageDialog(this, "El año de publicación debe estar entre 1000 y " + fecha + ".", "Validación de Año", JOptionPane.WARNING_MESSAGE);
-                return;
+            String fechaTexto = txtfechaIngreso.getText().trim();
+            java.sql.Date fechaIngreso;
+            
+            if (fechaTexto.isEmpty()) { 
+            	fechaIngreso = new java.sql.Date(System.currentTimeMillis());
+            } else {
+            	fechaIngreso = java.sql.Date.valueOf(fechaTexto);
             }
+            
+          
+            int anioIngreso = fechaIngreso.toLocalDate().getYear();
+            if (anioIngreso > anioActual) {
+                JOptionPane.showMessageDialog(this, "La fecha de ingreso no puede ser posterior al año actual (" + anioActual + ").", "Validación de Fecha", JOptionPane.WARNING_MESSAGE);
+                return;
+          }
 
 
             List<Libro> librosExistentes = libroDAO.listarTodos();
@@ -190,7 +236,6 @@ public class VentanaPrincipal extends JFrame {
                 }
             }
             
-            java.sql.Date fechaIngreso = new java.sql.Date(System.currentTimeMillis());
             Libro libro = new Libro(titulo, autor, categoria, precio, stock, anio, fechaIngreso);
             libroDAO.crear(libro);
 
@@ -200,6 +245,8 @@ public class VentanaPrincipal extends JFrame {
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Precio, Stock y Año deben ser valores numéricos válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, "El formato de la fecha debe ser AAAA-MM-DD (ejemplo: 2015-12-12).", "Formato de Fecha Inválido", JOptionPane.WARNING_MESSAGE );
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al guardar el libro: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -257,7 +304,7 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // Método Eliminar (NUEVO)
+    // Método Eliminar 
     private void eliminarLibro() {
         int filaSeleccionada = tablaLibros.getSelectedRow();
         if (filaSeleccionada == -1) {
@@ -288,6 +335,7 @@ public class VentanaPrincipal extends JFrame {
         txtPrecio.setText("");
         txtStock.setText("");
         txtAnio.setText("");
+        txtfechaIngreso.setText("");
         tablaLibros.clearSelection();
     }
 
