@@ -62,7 +62,7 @@ private static void mostrarLibros(List<Libro> libros) {
         return;
     }
     for (Libro l : libros) {
-        System.out.println("   ID: " + l.getId() + " | Título: " + l.getTitulo() + " | Autor: " + l.getAutor() + " | Precio: $" + l.getPrecio() + " | Stock: " + l.getExistencias());
+        System.out.println("   ID: " + l.getId() + " | Título: " + l.getTitulo() + " | Autor: " + l.getAutor() + " | Precio: $" + l.getPrecio() + " | Stock: " + l.getExistencias() + " | Fecha Ingreso: " + l.getFechaIngreso());
     }
 }
 }

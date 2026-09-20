@@ -1,6 +1,7 @@
 package edu.umg.programacion2.proyecto.dao;
 
 import edu.umg.programacion2.proyecto.db.ConexionDB;
+
 import edu.umg.programacion2.proyecto.modelo.Libro;
 
 import java.sql.Connection;
@@ -16,7 +17,7 @@ public class LibroDAO {
 
 	//1. Crear un nuevo libro en la DB
 	public Libro crear (Libro libro) throws SQLException{
-		String sql = "INSERT INTO libros (titulo, autor, categoria, precio, existencias, anio_publicacion) VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO libros (titulo, autor, categoria, precio, existencias, anio_publicacion, fechaIngreso) VALUES (?, ?, ?, ?, ?, ?, ?)";
 	
 		try (Connection conn = ConexionDB.getConnection();
 			 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
@@ -27,10 +28,9 @@ public class LibroDAO {
 			stmt.setDouble(4, libro.getPrecio());
 			stmt.setInt(5, libro.getExistencias());
 			stmt.setInt(6, libro.getAnioPublicacion());
-			stmt.setDate(7, new java.sql.Date(System.currentTimeMillis()));
+			stmt.setDate(7, libro.getFechaIngreso());
 		        stmt.executeUpdate();
 			
-			stmt.executeUpdate();
 			
 		 try (ResultSet keys = stmt.getGeneratedKeys()){
 			 if (keys.next()) {
@@ -71,7 +71,7 @@ public class LibroDAO {
 
 //3. Actualizar datos de libros
 public boolean actualizar(Libro libro) throws SQLException{
-	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?, existencias = ?, anio_publicacion = ? fechaIngreso = ?WHERE id = ?";
+	String sql = "UPDATE libros SET titulo = ?, autor = ?, categoria = ?, precio = ?, existencias = ?, anio_publicacion = ?, fechaIngreso = ? WHERE id = ?";
 	
 	try (Connection conn = ConexionDB.getConnection();
 		 PreparedStatement stmt = conn.prepareStatement(sql)){

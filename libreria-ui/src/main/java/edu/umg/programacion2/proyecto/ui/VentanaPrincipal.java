@@ -87,12 +87,16 @@ public class VentanaPrincipal extends JFrame {
         btnActualizar = new JButton("Actualizar");
         btnLimpiar = new JButton("Limpiar Campos");
         btnEliminar = new JButton("Eliminar Seleccionado");
+        JButton btnResumen = new JButton("Ver Resumen");
+        panelBotones.add(btnResumen);
+
 
         panelBotones.add(btnGuardar);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnLimpiar);
         panelBotones.add(btnEliminar); 
         add(panelBotones, BorderLayout.SOUTH);
+        
 
         // Eventos
         btnGuardar.addActionListener(e -> guardarLibro());
@@ -100,6 +104,8 @@ public class VentanaPrincipal extends JFrame {
         btnLimpiar.addActionListener(e -> limpiarFormulario());
         btnEliminar.addActionListener(e -> eliminarLibro()); 
 
+        
+                
         // Cargar datos
         cargarDatosTabla();
     }
